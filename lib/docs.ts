@@ -87,3 +87,14 @@ export async function getDocNav() {
 export function getDocToc(content: string): TocItem[] {
   return parseHeadings(content);
 }
+
+export function getEstimatedReadTime(content: string): number {
+  const words = content
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/[#>*_`[\]()!-]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+
+  return Math.max(1, Math.ceil(words / 200));
+}

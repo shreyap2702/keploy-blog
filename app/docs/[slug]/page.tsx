@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MDXRenderer } from "@/components/MDXRenderer";
+import { DocKeyboardNav } from "@/components/DocKeyboardNav";
 import { Navbar } from "@/components/Navbar";
 import { ReadingProgress } from "@/components/ReadingProgress";
 import { Sidebar } from "@/components/Sidebar";
 import { TableOfContents } from "@/components/TableOfContents";
-import { getAllDocs, getDocBySlug, getDocNav, getDocToc } from "@/lib/docs";
+import {
+  getAllDocs,
+  getDocBySlug,
+  getDocNav,
+  getDocToc,
+  getEstimatedReadTime,
+} from "@/lib/docs";
 
 type DocPageProps = {
   params: Promise<{ slug: string }>;
@@ -41,6 +48,13 @@ export default async function DocPage({ params }: DocPageProps) {
   }
 
   const toc = getDocToc(doc.content);
+  const readTime = getEstimatedReadTime(doc.content);
+  const activeIndex = nav.findIndex((item) => item.slug === slug);
+  const prevDoc = activeIndex > 0 ? nav[activeIndex - 1] : undefined;
+  const nextDoc =
+    activeIndex >= 0 && activeIndex < nav.length - 1
+      ? nav[activeIndex + 1]
+      : undefined;
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,7 +66,11 @@ export default async function DocPage({ params }: DocPageProps) {
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
             {doc.description}
           </p>
+          <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">
+            {readTime} min read
+          </p>
           <MDXRenderer source={doc.content} />
+          <DocKeyboardNav prev={prevDoc} next={nextDoc} />
         </main>
         <TableOfContents items={toc} />
       </div>
