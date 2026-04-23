@@ -7,7 +7,7 @@ order: 6
 # Recording API Calls with Keploy
 
 With the application running correctly, we can now use Keploy to record real API
-interactions and automatically generate test cases — no test writing required.
+interactions and automatically generate test cases, no test writing required.
 
 ---
 
@@ -78,7 +78,7 @@ Expected response:
 ```
 
 <Callout type="warning">
-  OTPs are dynamic — each `getVerificationCode` call returns a different value.
+  OTPs are dynamic each `getVerificationCode` call returns a different value.
   Make sure you use the OTP from your own response, not the one shown here.
 </Callout>
 
@@ -98,7 +98,7 @@ During testing, sending a mismatched OTP returns:
 {"status":"false","message":"OTP didn't match, email isn't verified"}
 ```
 
-This is expected behavior — and worth noting because it will matter when we
+This is expected behavior and worth noting because it will matter when we
 replay tests later.
 
 ---
@@ -130,7 +130,7 @@ Each test case includes:
 
 - The full HTTP request (method, headers, body, query params)
 - The recorded response
-- Any dependency interactions — including Redis calls — captured as mocks
+- Any dependency interactions including Redis calls are captured as mocks
 
 All of this is stored in the `keploy/` directory inside your project.
 
@@ -139,5 +139,5 @@ All of this is stored in the `keploy/` directory inside your project.
 ## What's Next
 
 We now have real, recorded test cases. In the next section, we'll replay them
-using `keploy test` — and see what happens when dynamic values like OTPs
+using `keploy test` and see what happens when dynamic values like OTPs
 enter the picture.

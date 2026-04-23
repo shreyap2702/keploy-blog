@@ -24,7 +24,7 @@ Addr: "redis:6379"
 ```
 
 <img
-  src="/images/redis_fix.png"
+  src="/images/fix.png"
   alt="redisConnect.go showing redis:6379"
   className="mx-auto my-4 rounded-lg shadow-md"
 />
@@ -36,7 +36,7 @@ That's it. One word changed.
 ## Why This Works
 
 Docker provides an internal DNS system for all containers on the same network.
-Every container is reachable by its name — no IPs, no config files needed.
+Every container is reachable by its name no IPs, no config files needed.
 
 Since the Redis container was started with `--name redis`, Docker automatically
 resolves `redis` to that container's internal IP on `keploy-network`.
