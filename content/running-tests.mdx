@@ -1,25 +1,162 @@
 ---
-title: "Running Tests"
-description: "Replay recorded traffic and validate API behavior."
-order: 7
+title: "Analyzing Test Results"
+description: "Understand what Keploy generated, why tests failed, and what that reveals about dynamic systems."
+order: 8
 ---
 
-# Running Tests
+# Analyzing Test Results
 
-Use Keploy replay mode to validate your current implementation against recorded interactions.
+5 tests ran. 1 passed. 4 failed.
 
-## Replay command
+Before drawing conclusions, it's worth understanding exactly what Keploy
+generated and why the failures are more informative than they first appear.
 
-```bash
-keploy test -c "npm run dev"
+---
+
+## What Keploy Generated
+
+After recording and testing, the `keploy/` directory contains everything
+Keploy captured and produced:
+
+<img
+  src="/images/keploy_tests_ls.png"
+  alt="Keploy folder structure showing test sets, mocks, and reports"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+```
+keploy/
+├── reports/
+│   └── test-run-0/
+│       ├── test-set-0-report.yaml
+│       └── test-set-1-report.yaml
+├── test-set-0/
+│   ├── mocks.yaml
+│   └── tests/
+│       ├── test-1.yaml
+│       └── test-2.yaml
+└── test-set-1/
+    ├── mocks.yaml
+    └── tests/
+        ├── test-1.yaml
+        ├── test-2.yaml
+        └── test-3.yaml
 ```
 
-## Tips
+| File | What it contains |
+|------|-----------------|
+| `tests/test-N.yaml` | Full HTTP request + recorded response |
+| `mocks.yaml` | Captured Redis interactions for that test set |
+| `reports/*.yaml` | Pass/fail results with diffs |
 
-- Keep your API config identical to recording mode
-- Seed required environment variables
-- Run tests in clean environments when possible
+---
+
+## What the Test Comparisons Showed
+
+Looking at the actual diffs from the test run gives us the real picture.
+
+### test-set-0 / test-1 — OTP endpoint
+
+<img
+  src="/images/keploy_test3.png"
+  alt="Test-1 comparison showing expected 200 vs actual 500"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+| | Expected | Actual |
+|---|---|---|
+| Status | `200` | `500` |
+| Body | `OTP Generated successfully`, otp: `1573` | `message: EOF`, status: `false` |
+
+The app returned a 500 because Keploy's Redis mock did not match the outgoing
+Redis call, so the connection failed at the dependency level, not the
+application level.
+
+---
+
+### test-set-0 / test-2 — Verify OTP endpoint
+
+<img
+  src="/images/keploy_test3.png"
+  alt="Test-2 comparison showing token mismatch"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+The response body contained a JWT token. Both expected and actual responses
+had tokens but they did not match exactly, causing the comparison to fail.
+
+---
+
+## Why the Tests Failed
+
+There are two distinct failure modes here, and they are worth separating clearly.
+
+### 1. Mock mismatch (Redis)
+
+During replay, Keploy substitutes real Redis calls with recorded mocks.
+Mocks are matched by request signature. If the outgoing Redis call
+differs slightly from what was recorded (different key, different OTP value)
+the mock does not match, and the dependency call fails entirely.
+
+This is what caused the `500 / EOF` responses on the OTP generation tests.
+
+### 2. Dynamic values in responses
+
+OTPs and JWT tokens are generated fresh on every request. Even when the app
+runs correctly, the response will never exactly match the recorded one because:
+
+- OTP: randomly generated each time
+- JWT token: includes timestamps and session data
+
+Keploy compares responses field by field. A different OTP or token results in a failed test.
 
 <Callout type="info">
-Replay is most effective when endpoints are deterministic and dependencies are mocked.
+  This is not a bug in Keploy. It is a fundamental challenge with
+  **deterministic replay in non-deterministic systems**. Keploy provides
+  configuration options like field-level noise filtering to handle this
+  but that is beyond the scope of this tutorial.
 </Callout>
+
+---
+
+## Why test-set-1 / test-2 Passed
+
+This was the "wrong OTP" test case, where the POST request sent an incorrect
+OTP and the expected response was:
+
+```json
+{"status":"false","message":"OTP didn't match, email isn't verified"}
+```
+
+This response is **fully deterministic** — no OTP, no token, no dynamic data.
+The same input always produces the same output. Keploy replayed it perfectly.
+
+This confirms Keploy works exactly as designed. The tool is not broken.
+The system under test has dynamic behavior that needs additional handling.
+
+---
+
+## Key Takeaways
+
+**What worked well:**
+- Keploy captured real API traffic without any test code
+- Mocks for Redis were generated automatically
+- Deterministic responses were replayed and verified correctly
+- The entire test suite ran in under 11 seconds
+
+**What needs attention:**
+- OTP and token fields need noise filtering configuration
+- Stateful Redis mocks require careful session management
+- Dynamic systems need explicit handling for non-deterministic fields
+
+---
+
+## Final Thought
+
+The 1 passing test is more meaningful than it looks. It proves the pipeline
+works end to end: request capture, mock generation, replay, and comparison
+all functioned correctly. The 4 failures are not test infrastructure problems.
+They are signals about where the application produces non-deterministic output.
+
+That distinction, between a broken test tool and a dynamic system, is
+exactly the kind of understanding that makes API testing effective in practice.

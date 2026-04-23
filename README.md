@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Keploy Docs
 
-## Getting Started
+## What is this repository about
+This repository is the frontend codebase for the Keploy documentation website. It is designed to be a minimal, file-driven static site that renders technical documentation and guides.
 
-First, run the development server:
+## What is this documentation about
+The documentation explains how to use Keploy, an API testing platform. The content covers topics such as prerequisites, running tests, debugging, analyzing test results, and troubleshooting common issues.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Components and Requirements
+This website is built with the following technologies:
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4
+- MDX for authoring content (@mdx-js/react, next-mdx-remote)
+- TypeScript
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To run the project locally, the requirements are:
+- Node.js (version 20 or higher)
+- A package manager like npm, pnpm, or yarn
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start the development server by installing dependencies and running `npm run dev`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Structure of this repository
+The project follows standard Next.js directory structures combined with a content folder for MDX files:
+- /app: Contains the core Next.js application, layouts, and page routes.
+- /components: Reusable user interface elements like the Navigation bar and Sidebar.
+- /content: Stores the primary documentation written in Markdown/MDX format. The site dynamically generates pages based on these files.
+- /public: Holds static files, such as logo images and screenshots referenced in the content.

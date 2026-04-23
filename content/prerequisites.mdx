@@ -1,31 +1,134 @@
 ---
 title: "Prerequisites"
-description: "Install the required tools before integrating Keploy."
+description: "Everything you need before running Keploy with a Go + Redis application."
 order: 2
 ---
 
 # Prerequisites
 
-Before running Keploy, make sure your machine includes:
+Before getting started, ensure your system has the following tools installed and running.
 
-## Required tools
+<Callout type="info">
+  This tutorial was tested on **macOS (zsh)**. Commands should work on Linux too,
+  but Docker setup steps may differ slightly.
+</Callout>
 
-- Docker Desktop (or Docker Engine + Compose)
-- Node.js 18+ and npm
-- Git
-- A running API service (local or containerized)
+## System Requirements
 
-## Verify setup
+- macOS or Linux
+- Terminal access (zsh or bash)
 
-Run these commands to verify your toolchain:
+---
+
+## Required Tools
+
+### 1. Docker
+
+Docker runs both the Gin application and Redis as containers on a shared network.
+
+- [Install Docker Desktop for macOS →](https://www.docker.com/products/docker-desktop/)
+- Make sure Docker Desktop is **open and running** before proceeding
+
+Verify:
 
 ```bash
-docker --version
-node --version
-npm --version
-git --version
+docker ps
 ```
 
 <Callout type="warning">
-If Docker is not running, Keploy recording and replay commands will fail.
+  If Docker is not running, the app will fail to connect to Redis and Keploy commands
+  will not work.
 </Callout>
+
+---
+
+### 2. Keploy CLI
+
+
+Keploy intercepts API traffic and converts it into replayable test cases — no test
+writing required.
+
+Install via:
+
+```bash
+curl --silent -O -L https://keploy.io/install.sh && source install.sh
+```
+
+Verify:
+
+```bash
+keploy --help
+```
+
+<img
+  src="/images/keploy_help.png"
+  alt="Terminal after cloning — gin-redis directory"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+---
+
+### 3. Go (Golang)
+
+The sample application is written in Go. v1.20 or higher is recommended.
+
+- [Install Go →](https://go.dev/dl/)
+
+Verify:
+
+```bash
+go version
+```
+
+---
+
+### 4. Git
+
+Used to clone the sample repository.
+
+Verify:
+
+```bash
+git --version
+```
+
+---
+
+## Basic Knowledge
+
+You don't need to be an expert, but familiarity with these will help:
+
+- Making HTTP requests using `curl`
+- Basic Docker concepts — containers, images, networks
+- Running commands in a terminal
+
+---
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/keploy/samples-go
+cd samples-go/gin-redis
+```
+
+
+<img
+  src="/images/git-ls1.png"
+  alt="Terminal after cloning — gin-redis directory"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+
+<img
+  src="/images/git-ls2.png"
+  alt="Terminal after cloning — gin-redis directory"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+
+---
+
+## Next Step
+
+Once all tools are verified and the repo is cloned, move on to
+[Setting Up the Application →](/setup)

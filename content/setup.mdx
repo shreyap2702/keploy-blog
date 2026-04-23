@@ -1,32 +1,121 @@
 ---
 title: "Setup"
-description: "Configure your project and start API services."
+description: "Build the application image and prepare dependencies using Docker."
 order: 3
 ---
 
 # Setup
 
-Create a simple API and run it so Keploy can observe traffic.
+In this section, we prepare the application environment by building the Docker image,
+creating a network, and starting Redis before running the app.
 
-## Start your API
+---
 
-```bash
-npm install
-npm run dev
-```
+## Project Structure
 
-If your API is containerized:
+After cloning, navigate into the sample:
 
 ```bash
-docker compose up --build
+cd samples-go/gin-redis
 ```
 
-## Confirm the endpoint
+Here's what the `gin-redis` directory contains:
 
-Make a quick request:
+| File / Folder | Purpose |
+|---|---|
+| `main.go` | Entry point of the Gin application |
+| `Dockerfile` | Used to build the app container |
+| `docker-compose.yml` | Optional orchestration config |
+| `keploy.yml` | Keploy configuration |
+| `routes/` | API route definitions |
+| `controllers/` | Request handler logic |
+| `services/` | Business logic layer |
+| `middlewares/` | Middleware functions |
+| `config/` | App configuration |
+| `helpers/` | Utility helpers |
+
+<img
+  src="/images/git-ls2.png"
+  alt="Terminal after cloning — gin-redis directory"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+---
+
+## Build the Docker Image
+
+Build a containerized version of the application:
 
 ```bash
-curl -i http://localhost:8080/health
+docker build -t gin-app:1.0 .
 ```
 
-You should receive a `200` response before continuing.
+This packages the Go application and its dependencies into a Docker image
+tagged `gin-app:1.0`.
+
+<Callout type="info">
+  This step may take a minute on first run — Docker pulls the base Go image and
+  compiles the application inside the container.
+</Callout>
+
+<img
+  src="/images/docker_build.png"
+  alt="Terminal after cloning — gin-redis directory"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+---
+
+## Create a Docker Network
+
+Create a dedicated network so the app container and Redis can communicate:
+
+```bash
+docker network create keploy-network
+```
+
+Without a shared network, containers are isolated by default and the app won't
+be able to reach Redis by hostname.
+
+---
+
+## Start Redis
+
+Run a Redis container on the same network:
+
+```bash
+docker run -p 6379:6379 --name redis --network keploy-network -d redis
+```
+
+| Flag | What it does |
+|---|---|
+| `-p 6379:6379` | Exposes Redis on localhost |
+| `--name redis` | Names the container `redis` (used as hostname) |
+| `--network keploy-network` | Attaches to the shared network |
+| `-d` | Runs in detached (background) mode |
+
+---
+
+## Verify
+
+Confirm Redis is running:
+
+```bash
+docker ps
+```
+
+You should see the `redis` container listed with status `Up`.
+
+<Callout type="warning">
+  If Redis isn't running, the application will fail to connect. We'll see exactly
+  what that looks like in the next section.
+</Callout>
+
+---
+
+## What's Next
+
+The environment is ready. In the next section, we'll run the application
+and run into our first real issue.
+
+[Debugging the Redis Connection Error →](/debugging)

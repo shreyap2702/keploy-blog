@@ -1,23 +1,37 @@
 ---
 title: "Introduction"
-description: "Understand what Keploy solves for API testing workflows."
+description: "Learn how Keploy automates API testing by capturing and replaying real traffic."
 order: 1
 ---
 
-# Introduction
+<img
+  src="/images/keploy-logo-dark.svg"
+  alt="Keploy"
+  className="w-full max-w-lg mb-6"
+/>
 
-Keploy helps you test APIs with real traffic. Instead of writing large test suites from scratch, you record API interactions and replay them for consistent regression testing.
+# Testing Go APIs Without Writing Tests
+
+Writing API tests is tedious. You mock dependencies, hardcode request payloads, and maintain
+test suites that drift from how your API actually behaves in production.
+
+[Keploy](https://keploy.io) takes a different approach, it captures real API traffic and
+replays it as test cases, automatically. No manual test writing. No stale mocks.
 
 <Callout type="info">
-This guide focuses on local developer workflows using Docker and a Node.js API.
+  This tutorial uses a **Go (Gin) + Redis** application running in Docker. You'll hit real
+  endpoints, watch Keploy capture them, and replay them as regression tests.
 </Callout>
 
-## Why this workflow
+## What You'll Learn
 
-- Reduce manual test-writing for common request/response flows
-- Catch regressions before deployment
-- Keep API behavior reproducible across environments
+- How Keploy fits into a local Docker-based dev workflow
+- How to record API calls as test cases using `keploy record`
+- How to replay them using `keploy test`
+- Why dynamic values (like OTPs and tokens) cause test failures — and what that tells you
 
-## What you will build
+## Why It Matters
 
-You will set up Keploy with Docker, record API calls, run replay tests, inspect failures, and fix regressions in a controlled loop.
+Most API bugs are regressions something that worked before quietly breaks. Keploy catches
+these by locking in real request/response pairs as your test baseline, so you're always testing
+against actual behavior, not assumptions.

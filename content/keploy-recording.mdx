@@ -1,23 +1,143 @@
 ---
-title: "Recording with Keploy"
-description: "Capture live API calls as reusable test cases."
+title: "Recording API Calls with Keploy"
+description: "Capture real API interactions and convert them into test cases automatically."
 order: 6
 ---
 
-# Recording with Keploy
+# Recording API Calls with Keploy
 
-Record traffic while your API handles real requests.
+With the application running correctly, we can now use Keploy to record real API
+interactions and automatically generate test cases — no test writing required.
 
-## Start recording
+---
+
+## Start Recording
+
+Keploy works by wrapping your application and intercepting all incoming traffic.
+Run the same command as before:
 
 ```bash
-keploy record -c "npm run dev"
+keploy record -c "docker run -p 3001:3001 \
+  --network keploy-network \
+  --name ginRedisApp \
+  gin-app:1.0" \
+  --container-name ginRedisApp
 ```
 
-Now hit your API using curl, Postman, or frontend flows.
+Once started, Keploy initializes its agent, sets up a proxy, and waits for traffic.
 
-## Captured artifacts
+<img
+  src="/images/pass.png"
+  alt="Keploy recording started with ingress forwarding active"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
 
-Keploy stores test cases and mocks that can be replayed later.
+<Callout type="info">
+  Keploy takes control of DNS resolution to intercept outgoing calls (including
+  Redis). This is how it captures dependency interactions alongside API calls.
+</Callout>
 
-<Image src="/images/keploy-flow.svg" alt="Keploy recording and replay flow" />
+---
+
+## Trigger API Calls
+
+Keploy only records when real requests hit the application. Open a new terminal
+and run the following curl commands.
+
+### Step 1 — Generate an OTP
+
+```bash
+curl "http://localhost:3001/api/getVerificationCode?email=test@gmail.com&username=test"
+```
+
+Expected response:
+
+```json
+{"status":"true","message":"OTP Generated successfully","otp":"1573"}
+```
+
+### Step 2 — Verify the OTP
+
+Use the OTP returned from Step 1:
+
+```bash
+curl -X POST "http://localhost:3001/api/verifyCode" \
+  -H "Content-Type: application/json" \
+  -d '{"otp":1573,"email":"test@gmail.com"}'
+```
+
+Expected response:
+
+```json
+{
+  "status": "true",
+  "token": "eyJhbGci...",
+  "username": "test",
+  "message": "OTP authenticated successfully"
+}
+```
+
+<Callout type="warning">
+  OTPs are dynamic — each `getVerificationCode` call returns a different value.
+  Make sure you use the OTP from your own response, not the one shown here.
+</Callout>
+
+<img
+  src="/images/curl-responses.png"
+  alt="curl responses showing OTP generation and verification"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+---
+
+## What Happens on a Wrong OTP
+
+During testing, sending a mismatched OTP returns:
+
+```json
+{"status":"false","message":"OTP didn't match, email isn't verified"}
+```
+
+This is expected behavior — and worth noting because it will matter when we
+replay tests later.
+
+---
+
+## Stop Recording
+
+Once you've triggered the API calls, stop Keploy:
+
+```bash
+CTRL + C
+```
+
+Keploy will save all captured interactions and shut down gracefully.
+
+---
+
+## What Keploy Captured
+
+After stopping, Keploy logs confirm the test cases were saved:
+
+```text
+Keploy has captured test cases for the user's application.
+  path: ".../keploy/test-set-0/tests", testcase name: "test-1"
+Keploy has captured test cases for the user's application.
+  path: ".../keploy/test-set-0/tests", testcase name: "test-2"
+```
+
+Each test case includes:
+
+- The full HTTP request (method, headers, body, query params)
+- The recorded response
+- Any dependency interactions — including Redis calls — captured as mocks
+
+All of this is stored in the `keploy/` directory inside your project.
+
+---
+
+## What's Next
+
+We now have real, recorded test cases. In the next section, we'll replay them
+using `keploy test` — and see what happens when dynamic values like OTPs
+enter the picture.

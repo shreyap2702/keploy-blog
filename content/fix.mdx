@@ -1,28 +1,97 @@
 ---
-title: "Fixing Regressions"
-description: "Apply deterministic fixes so replays become stable."
+title: "Fix: Updating the Redis Host"
+description: "Replace localhost with the Docker container name to fix Redis connectivity."
 order: 5
 ---
 
-# Fixing Regressions
+# Fix: Updating the Redis Host
 
-After identifying a mismatch, make your API behavior deterministic.
+The issue was a single line in the Redis configuration. The app was pointing to
+`localhost:6379`, which inside a container, refers to itself, not the Redis service.
 
-## Typical fixes
+---
 
-- Normalize time-sensitive values
-- Return stable error payloads
-- Avoid random IDs in business responses
-- Keep validation errors predictable
+## The Change
 
-## Example
+Open `helpers/redis/redisConnect.go` and update the `Addr` field:
 
-```ts
-// Return consistent error responses for invalid payloads
-return res.status(400).json({
-  error: "INVALID_REQUEST",
-  message: "name is required",
-});
+```go
+// Before
+Addr: "localhost:6379"
+
+// After
+Addr: "redis:6379"
 ```
 
-Re-run replay tests after every change to confirm stability.
+<img
+  src="/images/redis_fix.png"
+  alt="redisConnect.go showing redis:6379"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+That's it. One word changed.
+
+---
+
+## Why This Works
+
+Docker provides an internal DNS system for all containers on the same network.
+Every container is reachable by its name — no IPs, no config files needed.
+
+Since the Redis container was started with `--name redis`, Docker automatically
+resolves `redis` to that container's internal IP on `keploy-network`.
+
+```
+┌─────────────────────────┐     ┌─────────────────────────┐
+│   ginRedisApp container │     │     redis container      │
+│                         │     │                          │
+│  app → redis:6379 ──────┼──✓  │  Redis running here      │
+│                         │     │                          │
+└─────────────────────────┘     └─────────────────────────┘
+        Both on keploy-network — now resolving correctly
+```
+---
+
+## Rebuild the Image
+
+Since the source code changed, rebuild the Docker image:
+
+```bash
+docker build -t gin-app:1.0 .
+```
+
+---
+
+## Verify the Fix
+
+Run the app again via Keploy:
+
+```bash
+keploy record -c "docker run -p 3001:3001 \
+  --network keploy-network \
+  --name ginRedisApp \
+  gin-app:1.0" \
+  --container-name ginRedisApp
+```
+
+This time, the app starts cleanly:
+
+<img
+  src="/images/pass.png"
+  alt="Application running successfully with routes registered"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+<Callout type="info">
+  Notice the GIN routes now register correctly — `GET /api/getVerificationCode`
+  and `POST /api/verifyCode` — confirming the app is up and Redis is reachable.
+</Callout>
+
+---
+
+## What's Next
+
+With the application running correctly, Keploy is ready to intercept traffic.
+In the next section, we'll trigger real API calls and watch Keploy capture them
+as test cases automatically.
+

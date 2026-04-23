@@ -1,23 +1,124 @@
 ---
-title: "Reading Results"
-description: "Understand pass/fail output and next steps."
-order: 8
+title: "Running Tests with Keploy"
+description: "Replay recorded API interactions and observe test results."
+order: 7
 ---
 
-# Reading Results
+# Running Tests with Keploy
 
-After replay completes, review status for each test case.
+With test cases recorded, we can now replay them using a single command.
+Keploy will restart the application, replay each recorded request, and compare
+the responses against what was captured.
 
-## Result breakdown
+---
 
-- Passed: response matches recording
-- Failed: status/body/header mismatch
-- Skipped: test could not be executed due to setup constraints
+## Run the Tests
 
-## Recommended next actions
+```bash
+keploy test -c "docker run -p 3001:3001 \
+  --network keploy-network \
+  --name ginRedisApp \
+  gin-app:1.0"
+```
 
-1. Prioritize failures that impact user-facing endpoints.
-2. Fix regressions and replay immediately.
-3. Commit only when all critical tests pass.
+<img
+  src="/images/keploy_test2.png"
+  alt="Keploy test execution starting"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
 
-This loop gives you confidence before shipping API changes.
+Keploy will:
+- Start the application inside a container
+- Replay all requests from both `test-set-0` and `test-set-1`
+- Use recorded mocks for Redis interactions
+- Compare live responses against recorded ones
+
+<Callout type="info">
+  Keploy replays both test sets automatically. In this run, that means
+  **5 total test cases** across two recording sessions.
+</Callout>
+
+---
+
+## What Happens During Execution
+
+For each test case, Keploy:
+
+1. Sends the recorded HTTP request to the running app
+2. Intercepts outgoing Redis calls and substitutes recorded mocks
+3. Captures the live response
+4. Compares it against the recorded response — field by field
+
+If anything differs (status code, body, headers), the test fails.
+
+---
+
+## Test Results
+
+### test-set-0
+
+<img
+  src="/images/keploy_test3.png"
+  alt="test-set-0 results showing test-1 and test-2 comparison"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+| Test | Result |
+|------|--------|
+| test-1 | ❌ Failed |
+| test-2 | ❌ Failed |
+
+**test-set-0 summary:** 2 tests, 0 passed, 2 failed
+
+---
+
+### test-set-1
+
+<img
+  src="/images/keploy_test4.png"
+  alt="test-set-1 results showing test-1, test-2, test-3 comparison"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+| Test | Result |
+|------|--------|
+| test-1 | ❌ Failed |
+| test-2 | ✅ Passed |
+| test-3 | ❌ Failed |
+
+**test-set-1 summary:** 3 tests, 1 passed, 2 failed
+
+---
+
+## Complete Test Run Summary
+
+<img
+  src="/images/keploy_test5.png"
+  alt="Complete Keploy test run summary"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
+
+```
+COMPLETE TESTRUN SUMMARY.
+  Total tests:        5
+  Total test passed:  1
+  Total test failed:  4
+  Total time taken:   10.63 s
+
+  Test Suite     Total   Passed   Failed   Failed Testcases
+  test-set-0     2       0        2        test-1, test-2
+  test-set-1     3       1        2        test-1, test-3
+```
+
+---
+
+## Key Observation
+
+4 out of 5 tests failed and that's not a sign something is broken.
+
+This is Keploy behaving exactly as designed. The failures point to something
+specific about how this application works, something worth understanding before
+dismissing the results.
+
+In the next section, we'll look closely at what actually differed between
+expected and actual responses, and what that reveals.

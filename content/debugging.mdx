@@ -1,23 +1,107 @@
 ---
-title: "Debugging Failures"
-description: "Interpret replay mismatches and isolate root causes."
+title: "Debugging the Redis Connection Error"
+description: "Understanding why localhost fails inside Docker containers."
 order: 4
 ---
 
-# Debugging Failures
+# Debugging the Redis Connection Error
 
-When replay tests fail, compare expected and actual responses.
+With the environment set up, the next step was to start recording API calls using Keploy.
+The command used was:
 
-## Common mismatch types
+```bash
+keploy record -c "docker run -p 3001:3001 \
+  --network keploy-network \
+  --name ginRedisApp \
+  gin-app:1.0" \
+  --container-name ginRedisApp
+```
 
-- Status code drift (`200` expected, `500` actual)
-- Response body shape changes
-- Header differences (auth, content-type, caching)
-- Non-deterministic fields (timestamps, IDs)
+Keploy started, the agent initialized, and then — the app crashed.
 
-## Practical debugging loop
+<img
+  src="/images/fail.png"
+  alt="Redis connection error in Keploy logs"
+  className="mx-auto my-4 rounded-lg shadow-md"
+/>
 
-1. Re-run the failing test.
-2. Inspect diff output from Keploy.
-3. Trace handler logs in your API.
-4. Patch the code or adjust stable test assumptions.
+---
+
+## The Error
+
+Buried in the logs was this:
+
+```text
+Error initializing Redis client: EOF
+dial tcp 127.0.0.1:6379: connect: connection refused
+```
+
+Followed immediately by:
+
+```text
+user application terminated unexpectedly hence stopping keploy
+failed to record: user application terminated unexpectedly
+```
+
+The app couldn't connect to Redis, crashed, and Keploy stopped recording.
+
+---
+
+## The Initial Assumption
+
+The first instinct here is straightforward — *Redis must not be running.*
+
+But Redis **was** running. We started it in the previous step and it was
+visible in `docker ps`. So something else was wrong.
+
+---
+
+## The Key Insight: `localhost` Lies Inside Containers
+
+This is one of the most common Docker gotchas, and it's worth understanding clearly.
+
+When you run an application **inside a Docker container**, `localhost` does not
+refer to your machine. It refers to **the container itself**.
+
+So when the app tried to connect to:
+
+```text
+localhost:6379
+```
+
+it was looking for Redis **inside the `ginRedisApp` container** — where Redis
+was never running.
+
+---
+
+## Why the Connection Failed
+
+Here's what was actually happening:
+
+```
+┌─────────────────────────┐     ┌─────────────────────────┐
+│   ginRedisApp container │     │     redis container      │
+│                         │     │                          │
+│  app → localhost:6379 ──┼──✗  │  Redis running here      │
+│  (looks inside itself)  │     │                          │
+└─────────────────────────┘     └─────────────────────────┘
+        Both on keploy-network — but app is looking in the wrong place
+```
+
+The two containers were on the same network (`keploy-network`), so communication
+**was** possible — but the app was configured to look in the wrong place.
+
+<Callout type="info">
+  Docker networking allows containers to reach each other using their **container
+  name as a hostname** — not `localhost`.
+</Callout>
+
+---
+
+## What This Means
+
+The fix isn't about networking configuration or firewall rules.
+It's a single change in the application code — replace `localhost` with the
+correct hostname Docker actually understands.
+
+In the next section, we'll make that change.
