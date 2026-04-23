@@ -1,0 +1,32 @@
+---
+title: "Setup"
+description: "Configure your project and start API services."
+order: 3
+---
+
+# Setup
+
+Create a simple API and run it so Keploy can observe traffic.
+
+## Start your API
+
+```bash
+npm install
+npm run dev
+```
+
+If your API is containerized:
+
+```bash
+docker compose up --build
+```
+
+## Confirm the endpoint
+
+Make a quick request:
+
+```bash
+curl -i http://localhost:8080/health
+```
+
+You should receive a `200` response before continuing.

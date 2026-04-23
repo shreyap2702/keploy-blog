@@ -1,0 +1,23 @@
+---
+title: "Recording with Keploy"
+description: "Capture live API calls as reusable test cases."
+order: 6
+---
+
+# Recording with Keploy
+
+Record traffic while your API handles real requests.
+
+## Start recording
+
+```bash
+keploy record -c "npm run dev"
+```
+
+Now hit your API using curl, Postman, or frontend flows.
+
+## Captured artifacts
+
+Keploy stores test cases and mocks that can be replayed later.
+
+<Image src="/images/keploy-flow.svg" alt="Keploy recording and replay flow" />

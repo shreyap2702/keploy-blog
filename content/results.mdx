@@ -1,0 +1,23 @@
+---
+title: "Reading Results"
+description: "Understand pass/fail output and next steps."
+order: 8
+---
+
+# Reading Results
+
+After replay completes, review status for each test case.
+
+## Result breakdown
+
+- Passed: response matches recording
+- Failed: status/body/header mismatch
+- Skipped: test could not be executed due to setup constraints
+
+## Recommended next actions
+
+1. Prioritize failures that impact user-facing endpoints.
+2. Fix regressions and replay immediately.
+3. Commit only when all critical tests pass.
+
+This loop gives you confidence before shipping API changes.

@@ -1,0 +1,23 @@
+---
+title: "Debugging Failures"
+description: "Interpret replay mismatches and isolate root causes."
+order: 4
+---
+
+# Debugging Failures
+
+When replay tests fail, compare expected and actual responses.
+
+## Common mismatch types
+
+- Status code drift (`200` expected, `500` actual)
+- Response body shape changes
+- Header differences (auth, content-type, caching)
+- Non-deterministic fields (timestamps, IDs)
+
+## Practical debugging loop
+
+1. Re-run the failing test.
+2. Inspect diff output from Keploy.
+3. Trace handler logs in your API.
+4. Patch the code or adjust stable test assumptions.

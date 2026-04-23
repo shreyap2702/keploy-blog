@@ -1,0 +1,25 @@
+---
+title: "Running Tests"
+description: "Replay recorded traffic and validate API behavior."
+order: 7
+---
+
+# Running Tests
+
+Use Keploy replay mode to validate your current implementation against recorded interactions.
+
+## Replay command
+
+```bash
+keploy test -c "npm run dev"
+```
+
+## Tips
+
+- Keep your API config identical to recording mode
+- Seed required environment variables
+- Run tests in clean environments when possible
+
+<Callout type="info">
+Replay is most effective when endpoints are deterministic and dependencies are mocked.
+</Callout>

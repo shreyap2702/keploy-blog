@@ -1,0 +1,31 @@
+---
+title: "Prerequisites"
+description: "Install the required tools before integrating Keploy."
+order: 2
+---
+
+# Prerequisites
+
+Before running Keploy, make sure your machine includes:
+
+## Required tools
+
+- Docker Desktop (or Docker Engine + Compose)
+- Node.js 18+ and npm
+- Git
+- A running API service (local or containerized)
+
+## Verify setup
+
+Run these commands to verify your toolchain:
+
+```bash
+docker --version
+node --version
+npm --version
+git --version
+```
+
+<Callout type="warning">
+If Docker is not running, Keploy recording and replay commands will fail.
+</Callout>

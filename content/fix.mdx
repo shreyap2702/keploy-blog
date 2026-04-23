@@ -1,0 +1,28 @@
+---
+title: "Fixing Regressions"
+description: "Apply deterministic fixes so replays become stable."
+order: 5
+---
+
+# Fixing Regressions
+
+After identifying a mismatch, make your API behavior deterministic.
+
+## Typical fixes
+
+- Normalize time-sensitive values
+- Return stable error payloads
+- Avoid random IDs in business responses
+- Keep validation errors predictable
+
+## Example
+
+```ts
+// Return consistent error responses for invalid payloads
+return res.status(400).json({
+  error: "INVALID_REQUEST",
+  message: "name is required",
+});
+```
+
+Re-run replay tests after every change to confirm stability.

@@ -1,0 +1,11 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" fill="#0f0f0f"/>
+  <rect x="120" y="220" width="260" height="120" rx="16" fill="#18181b" stroke="#3f3f46"/>
+  <text x="250" y="288" fill="#f4f4f5" text-anchor="middle" font-family="Arial" font-size="28">Client Traffic</text>
+  <rect x="470" y="220" width="260" height="120" rx="16" fill="#18181b" stroke="#eab308"/>
+  <text x="600" y="288" fill="#fef08a" text-anchor="middle" font-family="Arial" font-size="28">Keploy Record</text>
+  <rect x="820" y="220" width="260" height="120" rx="16" fill="#18181b" stroke="#3f3f46"/>
+  <text x="950" y="288" fill="#f4f4f5" text-anchor="middle" font-family="Arial" font-size="28">Replay Tests</text>
+  <path d="M390 280H455" stroke="#a1a1aa" stroke-width="6" stroke-linecap="round"/>
+  <path d="M740 280H805" stroke="#a1a1aa" stroke-width="6" stroke-linecap="round"/>
+</svg>
