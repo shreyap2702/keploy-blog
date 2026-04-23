@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MDXRenderer } from "@/components/MDXRenderer";
 import { Navbar } from "@/components/Navbar";
+import { ReadingProgress } from "@/components/ReadingProgress";
 import { Sidebar } from "@/components/Sidebar";
 import { TableOfContents } from "@/components/TableOfContents";
 import { getAllDocs, getDocBySlug, getDocNav, getDocToc } from "@/lib/docs";
@@ -43,7 +44,8 @@ export default async function DocPage({ params }: DocPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <ReadingProgress />
+      <Navbar navItems={nav} />
       <div className="mx-auto flex w-full max-w-[1400px] gap-2 px-4 md:px-6">
         <Sidebar items={nav} />
         <main className="min-w-0 flex-1 py-8">
