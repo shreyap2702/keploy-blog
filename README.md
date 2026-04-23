@@ -26,3 +26,13 @@ The project follows standard Next.js directory structures combined with a conten
 - /components: Reusable user interface elements like the Navigation bar and Sidebar.
 - /content: Stores the primary documentation written in Markdown/MDX format. The site dynamically generates pages based on these files.
 - /public: Holds static files, such as logo images and screenshots referenced in the content.
+
+## UX Features
+Small quality-of-life features added to improve the reading experience:
+- Dark and light mode toggle
+- Command palette (Cmd+K) for quick navigation across sections
+- Reading progress bar that fills as you scroll through a page
+- Copy button on all code blocks
+- Active section highlight in the sidebar as you scroll
+- Estimated read time displayed at the top of each page
+- Keyboard shortcuts — use arrow keys to navigate between pages
